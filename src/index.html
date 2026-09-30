@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#08080a">
+  <meta name="color-scheme" content="dark">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>{{TITLE}}</title>
+  <meta name="description" content="{{DESCRIPTION}}">
+  <link rel="canonical" href="{{ORIGIN}}/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="D.Time">
+  <meta property="og:title" content="D.Time — Detailing Timepieces">
+  <meta property="og:description" content="Official website and contact channels for D.Time.">
+  <meta property="og:url" content="{{ORIGIN}}/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="D.Time — Detailing Timepieces">
+  <meta name="twitter:description" content="Official website and contact channels for D.Time.">
+  <link rel="icon" type="image/png" sizes="192x192" href="/brand/favicon-192.png">
+  <link rel="apple-touch-icon" href="/brand/favicon-192.png">
+  <link rel="preload" href="/fonts/cormorant-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/video.css?v=20260930-scroll">
+  <script src="/year.js" defer></script>
+  <script src="/video.js?v=20260930-scroll" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#connections">Skip to official links</a>
+  <div class="video-backdrop" aria-hidden="true">
+    <video id="background-video" muted loop playsinline preload="none" poster="/media/background-poster.jpg" data-src="/media/background-hd.mp4"></video>
+    <div class="video-veil"></div>
+  </div>
+  <main class="page">
+    <header class="hero">
+      <div class="identity">
+        <img class="brand-emblem" src="/brand/logo-mark.png" width="512" height="481" alt="D.Time" fetchpriority="high">
+        <p class="brand-caption">DETAILING TIMEPIECES</p>
+      </div>
+      <div class="introduction">
+        <h1>Connect With D.Time</h1>
+        <p>Official channels. A direct connection.</p>
+      </div>
+    </header>
+
+    <section class="connections" id="connections" aria-label="Connect with D.Time" tabindex="-1">
+      {{WEBSITE_CARD}}
+      {{WHATSAPP_CARD}}
+    </section>
+
+    <section class="socials" aria-labelledby="social-title">
+      <h2 class="section-label" id="social-title">OFFICIAL CHANNELS</h2>
+      <ul>{{SOCIAL_ROWS}}</ul>
+    </section>
+
+    <footer class="footer">
+      <p class="signature">D.Time <span>·</span> Detailing Timepieces</p>
+      <nav aria-label="Footer">{{FOOTER_LINKS}}</nav>
+      <p class="copyright">© <span id="year">{{YEAR}}</span> D.Time</p>
+    </footer>
+  </main>
+  <button id="video-toggle" class="video-toggle" type="button" aria-label="Play background video" title="Play background video" hidden>
+    <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 10 7-10 7Z"/></svg>
+    <svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
+  </button>
+</body>
+</html>

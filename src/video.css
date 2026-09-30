@@ -1,0 +1,26 @@
+.video-backdrop,.video-toggle{display:none}
+@media(max-width:639px){
+:root{--veil:.55;--gold:#e1bd83;--gold-light:#f3d6a8;--muted:#e1dbd2;--ink:#fffaf3;--line-quiet:rgba(255,245,225,.22)}
+html{background:#08080a}body{background:transparent;isolation:isolate;min-height:100svh}
+/* Anchor at the top; Safari's collapsing toolbar must not resize/recenter the video. */
+.video-backdrop{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;z-index:-1;overflow:hidden;background:#08080a;pointer-events:none}
+.video-backdrop video{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+.video-veil{position:absolute;inset:0;background:rgba(0,0,0,var(--veil));transition:background-color 180ms}
+.video-veil::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.22),transparent 37%,rgba(0,0,0,.08) 65%,rgba(0,0,0,.38))}
+.page{position:relative;padding-bottom:calc(40px + env(safe-area-inset-bottom));max-width:480px}
+.hero{margin-inline:-24px;padding-inline:24px;background:linear-gradient(180deg,rgba(8,8,10,.52),rgba(8,8,10,.4) 80%,transparent);text-shadow:0 2px 10px #0009}
+.brand-emblem{filter:drop-shadow(0 2px 8px #0008)}
+.action-card{background:rgba(8,8,10,.75);border-color:rgba(255,245,225,.28)}
+.action-card.primary{background:linear-gradient(115deg,rgba(192,158,108,.08),transparent 80%),rgba(8,8,10,.76);border-color:rgba(225,189,131,.7)}
+.socials{background:rgba(8,8,10,.67);padding:17px 17px 5px;margin-top:24px;border:1px solid rgba(255,245,225,.1)}
+.social-row:last-child{border-bottom:0}.social-row{min-height:51px}
+.footer{margin-top:24px;padding:20px 8px 12px;background:rgba(8,8,10,.7);border-top-color:rgba(255,245,225,.19)}
+.video-toggle{position:fixed;z-index:5;right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));display:grid;place-items:center;width:44px;height:44px;border:1px solid #dbc39777;background:#08080acc;color:#f3d6a8;border-radius:50%;cursor:pointer;box-shadow:0 2px 10px #0003}
+.video-toggle:focus-visible{outline:2px solid var(--gold-light);outline-offset:3px}.video-toggle svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.5}.video-toggle .pause-icon{display:none}.video-toggle.is-playing .play-icon{display:none}.video-toggle.is-playing .pause-icon{display:block}
+@media(hover:hover){a.action-card:hover{background-color:rgba(25,24,25,.91)}a.social-row:hover{background:rgba(192,158,108,.09)}}
+@media(min-width:640px){.hero{margin-inline:-36px;padding-inline:36px}.page{min-height:100svh}}
+@media(prefers-reduced-motion:reduce){.video-veil{transition:none}}
+
+.video-backdrop{display:block}
+.video-toggle[hidden]{display:none}
+}
