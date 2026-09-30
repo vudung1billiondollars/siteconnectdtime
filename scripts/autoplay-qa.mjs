@@ -100,15 +100,34 @@ async function stableImageBounds(page) {
     return {x, y, width, height};
   });
   const original = await bounds();
+  const assertWholeImage = async () => {
+    const image = await bounds();
+    const viewport = page.viewportSize();
+    assert(Math.abs(image.width / image.height - 9 / 16) < .001, 'Fallback retains the complete original frame');
+    assert(image.width <= viewport.width + 1 && image.height <= viewport.height + 1, 'Image fits wholly inside the viewport');
+    assert(Math.abs(image.x + image.width / 2 - viewport.width / 2) < 1, 'Image is centered');
+    assert(Math.abs(image.y) < 1, 'Image remains at the top');
+    const video = await page.locator('#background-video').evaluate(el => {
+      const {x, y, width, height} = el.getBoundingClientRect();
+      return {x, y, width, height};
+    });
+    assert.deepEqual(image, video, 'Native video and fallback have identical framing');
+    return image;
+  };
+  await assertWholeImage();
   await page.evaluate(() => scrollTo(0, 120));
   assert(await page.locator('.page').evaluate(el => el.getBoundingClientRect().top < 0),
     'Content scrolls over the background');
   assert.deepEqual(await bounds(), original, 'Scrolling does not reposition the fallback');
-  for (const height of [820, 630, 700]) {
+  // This changes the real layout viewport. Safari toolbar-only movement is not
+  // reproduced by setViewportSize and requires checking on the actual device.
+  for (const height of [120, 780, 2000, 780, 500, 700]) {
     await page.setViewportSize({width: 390, height});
     await page.waitForTimeout(100);
+    const refitted = await assertWholeImage();
     await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
-    assert.deepEqual(await bounds(), original, 'Height-only toolbar changes keep the image crop fixed');
+    assert.deepEqual(await bounds(), refitted, 'Content scroll preserves the newly fitted frame');
+    if (height === 780) assert(refitted.width > 380 && refitted.height > 680, 'Normal height recovers from a transient strip or oversized viewport');
   }
 }
 

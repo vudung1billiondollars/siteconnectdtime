@@ -17,7 +17,6 @@ let imageLoading = false;
 let nativePending = false;
 let playAttempt = 0;
 let playbackTimer;
-let backdropWidth = 0;
 backdrop.dataset.renderer = renderer;
 
 // Configure the media element before giving WebKit a source.
@@ -28,20 +27,6 @@ video.controls = false;
 video.setAttribute('webkit-playsinline', '');
 video.disablePictureInPicture = true;
 video.disableRemotePlayback = true;
-
-function sizeBackdrop() {
-  const width = document.documentElement.clientWidth;
-  if (!mobile.matches) {
-    backdrop.style.removeProperty('height');
-    backdropWidth = 0;
-    return;
-  }
-  // Safari toolbar/keyboard height changes must not resize or recenter the crop.
-  if (width === backdropWidth) return;
-  backdropWidth = width;
-  backdrop.style.removeProperty('height');
-  backdrop.style.height = `${backdrop.getBoundingClientRect().height}px`;
-}
 
 function wantsMotion() {
   return mobile.matches && !document.hidden && !userPaused && !failed &&
@@ -157,10 +142,8 @@ toggle.addEventListener('click', () => {
   if (!userPaused) userStarted = true;
   update();
 });
-window.addEventListener('resize', sizeBackdrop);
 window.addEventListener('pageshow', update);
-mobile.addEventListener('change', () => { sizeBackdrop(); update(); });
+mobile.addEventListener('change', update);
 reduced.addEventListener('change', () => { userStarted = false; update(); });
 document.addEventListener('visibilitychange', update);
-sizeBackdrop();
 update();
