@@ -11,6 +11,7 @@
     "start": "node scripts/serve.mjs",
     "check": "node scripts/verify.mjs",
     "test:browser": "node scripts/browser-qa.mjs",
-    "test:scroll": "node scripts/scroll-qa.mjs"
+    "test:scroll": "node scripts/scroll-qa.mjs",
+    "test:autoplay": "node scripts/autoplay-qa.mjs"
   }
 }

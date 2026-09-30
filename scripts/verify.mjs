@@ -27,6 +27,8 @@ assert((await readFile('dist/robots.txt','utf8')).includes(`${site.origin}/sitem
 assert((await readFile('dist/sitemap.xml','utf8')).includes(`<loc>${site.origin}/</loc>`));
 assert((await stat('dist/year.js')).size<200,'Tiny optional runtime');
 assert((await readFile('dist/video.css','utf8')).includes('--veil:.55'),'Approved 55% video overlay');
-assert(html.includes('data-src="/media/background-hd.mp4"'),'Full HD video source');
-assert(html.includes('muted loop playsinline preload="none"'),'Mobile video behavior');
+assert(html.includes('data-src="/media/background-inline.mp4"'),'Full HD video source');
+assert(html.includes('autoplay muted loop playsinline webkit-playsinline'),'Inline autoplay attributes');
+assert(html.includes('data-src="/media/background-motion.webp"'),'Animated fallback');
+assert((await stat('dist/media/background-motion.webp')).size < 8 * 1024 * 1024,'Bounded animated fallback payload');
 console.log('PASS: links, hierarchy, local assets, metadata, sitemap, robots, motion, safe areas, runtime budget.');

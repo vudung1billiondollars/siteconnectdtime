@@ -38,6 +38,7 @@ const tokens={TITLE:escape(site.title),DESCRIPTION:escape(site.description),ORIG
 };
 await mkdir('dist',{recursive:true});
 await cp('public','dist',{recursive:true});
+await cp('README.md','dist/README.md');
 let template=await readFile('src/index.html','utf8');
 template=template.replace(/\{\{([A-Z_]+)\}\}/g,(_,key)=>{if(!(key in tokens))throw new Error(`Missing token ${key}`);return tokens[key];});
 await writeFile('dist/index.html',template);
