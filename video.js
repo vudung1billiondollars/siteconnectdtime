@@ -1,11 +1,33 @@
 const video = document.getElementById('background-video');
+const motion = document.getElementById('background-motion');
 const toggle = document.getElementById('video-toggle');
 const backdrop = document.querySelector('.video-backdrop');
 const mobile = matchMedia('(max-width: 639px)');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+const inlinePlayback = matchMedia('(-webkit-video-playable-inline)');
+const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const embeddedTikTok = /TikTok|musical_ly|BytedanceWebview|aweme|trill/i.test(navigator.userAgent);
+let renderer = embeddedTikTok || (ios && !inlinePlayback.matches) ? 'image' : 'video';
 let userPaused = false;
+let userStarted = false;
 let failed = false;
+let imagePlaying = false;
+let imageLoading = false;
+let nativePending = false;
+let playAttempt = 0;
+let playbackTimer;
 let backdropWidth = 0;
+backdrop.dataset.renderer = renderer;
+
+// Configure the media element before giving WebKit a source.
+video.defaultMuted = true;
+video.muted = true;
+video.playsInline = true;
+video.controls = false;
+video.setAttribute('webkit-playsinline', '');
+video.disablePictureInPicture = true;
+video.disableRemotePlayback = true;
 
 function sizeBackdrop() {
   const width = document.documentElement.clientWidth;
@@ -14,51 +36,131 @@ function sizeBackdrop() {
     backdropWidth = 0;
     return;
   }
-  // Height-only resizes come from browser chrome or the keyboard. Keep the
-  // same crop while scrolling; remeasure only on entry or a real width change.
+  // Safari toolbar/keyboard height changes must not resize or recenter the crop.
   if (width === backdropWidth) return;
   backdropWidth = width;
   backdrop.style.removeProperty('height');
   backdrop.style.height = `${backdrop.getBoundingClientRect().height}px`;
 }
 
-sizeBackdrop();
-window.addEventListener('resize', sizeBackdrop);
-mobile.addEventListener('change', sizeBackdrop);
+function wantsMotion() {
+  return mobile.matches && !document.hidden && !userPaused && !failed &&
+    (userStarted || (!reduced.matches && !navigator.connection?.saveData));
+}
 
 function sync() {
-  const playing = !video.paused;
+  const playing = wantsMotion() && (renderer === 'image' ? imagePlaying : !video.paused);
   toggle.hidden = !mobile.matches || failed;
   toggle.classList.toggle('is-playing', playing);
-  toggle.setAttribute('aria-label', playing ? 'Pause background video' : 'Play background video');
+  toggle.setAttribute('aria-label', playing ? 'Pause background animation' : 'Play background animation');
   toggle.title = toggle.getAttribute('aria-label');
 }
 
-async function play() {
-  if (!mobile.matches || document.hidden || failed) return;
-  if (!video.getAttribute('src')) video.src = video.dataset.src;
+function stopImage() {
+  imagePlaying = false;
+  imageLoading = false;
+  motion.hidden = true;
+  // Merely hiding an animated image does not stop its decoding/playback.
+  if (motion.getAttribute('src') && motion.getAttribute('src') !== video.poster) motion.src = video.poster;
+}
+
+function startImage() {
+  if (imagePlaying || imageLoading) return;
+  imageLoading = true;
+  motion.src = motion.dataset.src;
+}
+
+function useImage() {
+  renderer = 'image';
+  backdrop.dataset.renderer = renderer;
+  playAttempt++;
+  nativePending = false;
+  clearTimeout(playbackTimer);
+  video.autoplay = false;
+  video.pause();
+  if (video.getAttribute('src')) {
+    video.removeAttribute('src');
+    video.load();
+  }
+  update();
+}
+
+function startVideo() {
+  if (nativePending || !video.paused) return;
+  const attempt = ++playAttempt;
+  nativePending = true;
   video.muted = true;
-  try { await video.play(); } catch { /* Keep the poster and allow a user-initiated retry. */ }
-  sync();
+  video.defaultMuted = true;
+  video.playsInline = true;
+  if (!video.getAttribute('src')) video.src = video.dataset.src;
+  // Some embedded browsers leave play() pending instead of rejecting it.
+  playbackTimer = setTimeout(() => {
+    if (attempt === playAttempt && wantsMotion() && renderer === 'video' && (video.paused || video.readyState < 2)) useImage();
+  }, 6000);
+  video.play().then(() => {
+    if (attempt !== playAttempt) return;
+    nativePending = false;
+    clearTimeout(playbackTimer);
+    if (!wantsMotion() || renderer !== 'video') video.pause();
+    sync();
+  }).catch(() => {
+    if (attempt !== playAttempt) return;
+    nativePending = false;
+    clearTimeout(playbackTimer);
+    if (wantsMotion()) useImage();
+  });
 }
 
 function update() {
-  if (!mobile.matches || reduced.matches || document.hidden || userPaused || navigator.connection?.saveData) {
+  if (!wantsMotion()) {
+    playAttempt++;
+    nativePending = false;
+    clearTimeout(playbackTimer);
     video.pause();
+    stopImage();
+  } else if (renderer === 'image') {
+    video.pause();
+    startImage();
   } else {
-    play();
+    startVideo();
   }
   sync();
 }
 
-video.addEventListener('play', sync);
-video.addEventListener('pause', sync);
-video.addEventListener('error', () => { failed = true; sync(); });
-toggle.addEventListener('click', () => {
-  userPaused = !video.paused;
-  if (userPaused) video.pause(); else play();
+motion.addEventListener('load', () => {
+  if (motion.getAttribute('src') !== motion.dataset.src) return;
+  imageLoading = false;
+  if (!wantsMotion()) return stopImage();
+  imagePlaying = true;
+  motion.hidden = false;
+  sync();
 });
-mobile.addEventListener('change', update);
-reduced.addEventListener('change', update);
+motion.addEventListener('error', () => {
+  if (motion.getAttribute('src') !== motion.dataset.src) return;
+  failed = true;
+  stopImage();
+  sync();
+});
+video.addEventListener('play', () => {
+  if (renderer === 'image' || !wantsMotion()) video.pause();
+  sync();
+});
+video.addEventListener('pause', sync);
+video.addEventListener('error', () => { if (renderer === 'video') useImage(); });
+video.addEventListener('webkitbeginfullscreen', () => {
+  // Recovery for an embedded browser that ignores its inline capability signal.
+  try { video.webkitExitFullscreen?.(); } catch { /* The host may already be closing it. */ }
+  useImage();
+});
+toggle.addEventListener('click', () => {
+  userPaused = wantsMotion();
+  if (!userPaused) userStarted = true;
+  update();
+});
+window.addEventListener('resize', sizeBackdrop);
+window.addEventListener('pageshow', update);
+mobile.addEventListener('change', () => { sizeBackdrop(); update(); });
+reduced.addEventListener('change', () => { userStarted = false; update(); });
 document.addEventListener('visibilitychange', update);
+sizeBackdrop();
 update();
