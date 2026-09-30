@@ -26,7 +26,8 @@ To edit the source branch, use Node.js 20+ and run `npm run build` then `npm run
 - Approved mobile Full HD 1080 x 1920 video, 55% dark overlay.
 - Silent MP4 with inline playback configured before the source is loaded.
 - TikTok and iOS browsers without inline playback use a looping Full HD animated WebP made from the same complete clip. Rejected or stalled native autoplay also falls back to this image, keeping the background inside the page.
-- Stable video framing while scrolling or browser toolbars change height.
+- Both renderers share the original 9:16 frame, fitted fully inside the small viewport with black space around it. The frame stays fixed while content scrolls.
+- CSS small-viewport sizing replaces the initial JavaScript height snapshot, so a temporary short/tall viewport while a browser opens cannot remain locked in place. The media is no longer enlarged to cover the screen.
 - Instagram, Facebook and TikTok links supplied by the owner on 2026-09-30.
 - Reduced motion/data-saving fallback and pause/play control.
 - Desktop does not automatically request the mobile video.
