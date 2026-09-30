@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://connect.dtimepieces.com/sitemap.xml
